@@ -1,25 +1,39 @@
 # Spendline Python SDK
 
-Install with:
+Spendline tracks LLM usage in production with one line of code. The SDK captures tokens, model, latency, cost, timestamp, workflow ID, and request metadata without collecting prompt or completion text.
+
+## Install
 
 ```bash
 pip install spendline
 ```
 
-## Track Pattern
+The package is live on PyPI:
+
+- `https://pypi.org/project/spendline/0.1.0/`
+
+## Quick Start
 
 ```python
+from openai import OpenAI
 from spendline import track
 
+client = OpenAI()
+
 response = track(
-    openai.chat.completions.create(
+    client.chat.completions.create(
         model="gpt-5-mini",
-        messages=[{"role": "user", "content": "Hello"}],
-    )
+        messages=[{"role": "user", "content": "Say hello"}],
+    ),
+    workflow_id="support-bot",
+    session_id="session-123",
+    metadata={"feature": "chat", "environment": "production"},
 )
+
+print(response.choices[0].message.content)
 ```
 
-## Patch Pattern
+## Auto-Patch Supported Clients
 
 ```python
 from spendline import patch
@@ -27,7 +41,7 @@ from spendline import patch
 patch()
 ```
 
-## LangChain Pattern
+## LangChain
 
 ```python
 from spendline.langchain import SpendlineCallbackHandler
@@ -54,7 +68,9 @@ handler = SpendlineCallbackHandler(workflow_id="chatbot")
 | `SPENDLINE_DISABLE` | Disable tracking when `true` |
 | `SPENDLINE_LOG` | Print tracked events locally |
 
-## What We Don't Collect
+## Privacy
+
+Spendline does not collect:
 
 - Prompt text
 - Completion text

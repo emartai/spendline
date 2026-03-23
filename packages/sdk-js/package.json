@@ -1,10 +1,16 @@
 {
   "name": "spendline",
   "version": "0.1.0",
+  "description": "Track LLM tokens, cost, latency, and model usage in production.",
+  "license": "MIT",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -12,11 +18,34 @@
       "require": "./dist/index.cjs"
     }
   },
+  "homepage": "https://github.com/emartai/spendline#readme",
+  "bugs": {
+    "url": "https://github.com/emartai/spendline/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/emartai/spendline.git",
+    "directory": "packages/sdk-js"
+  },
+  "keywords": [
+    "llm",
+    "ai",
+    "openai",
+    "anthropic",
+    "bedrock",
+    "observability",
+    "cost-tracking",
+    "spendline"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsup",
     "test": "vitest run",
     "lint": "eslint \"src/**/*.ts\"",
-    "typecheck": "tsc --project tsconfig.json --noEmit"
+    "typecheck": "tsc --project tsconfig.json --noEmit",
+    "prepublishOnly": "npm run test && npm run typecheck && npm run build"
   },
   "engines": {
     "node": ">=18"

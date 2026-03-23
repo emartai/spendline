@@ -1,0 +1,53 @@
+<svg width="1040" height="260" viewBox="0 0 1040 260" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Spendline Beta</title>
+  <desc id="desc">Spendline logo with beta badge for GitHub README.</desc>
+
+  <defs>
+    <pattern id="grid" width="36" height="36" patternUnits="userSpaceOnUse">
+      <circle cx="18" cy="18" r="1.2" fill="#1C4A5A"/>
+    </pattern>
+    <linearGradient id="gridFade" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="white" stop-opacity="0"/>
+      <stop offset="45%" stop-color="white" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="white" stop-opacity="0.9"/>
+    </linearGradient>
+    <mask id="gridMask">
+      <rect width="1040" height="260" rx="28" fill="url(#gridFade)"/>
+    </mask>
+    <linearGradient id="chartFill" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1C4A5A" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#07131A" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1040" height="260" rx="28" fill="#07131A"/>
+
+  <!-- Dot grid (fades in from left to right) -->
+  <rect width="1040" height="260" rx="28" fill="url(#grid)" mask="url(#gridMask)"/>
+
+  <!-- Background sparkline chart (bottom-right area) -->
+  <polygon
+    points="590,215 635,195 672,202 710,172 748,180 790,148 828,158 868,128 906,142 944,108 984,122 1024,88 1040,88 1040,240 590,240"
+    fill="url(#chartFill)"/>
+  <polyline
+    points="590,215 635,195 672,202 710,172 748,180 790,148 828,158 868,128 906,142 944,108 984,122 1024,88"
+    stroke="#1C6B63" stroke-width="1.5" fill="none" opacity="0.6"/>
+
+  <!-- BETA badge -->
+  <rect x="822" y="58" width="152" height="58" rx="29" fill="#0B1E26" stroke="#1C6B63" stroke-width="2"/>
+  <text x="898" y="95" fill="#7DFF8D" font-family="Segoe UI, Arial, sans-serif" font-size="30" font-weight="700" text-anchor="middle" letter-spacing="6">BETA</text>
+
+  <!-- Logo -->
+  <g>
+    <text x="73" y="112" fill="#33D17A" font-family="Segoe UI, Arial, sans-serif" font-size="86" font-weight="800">$</text>
+    <text x="121" y="112" fill="#ECEFF4" font-family="Segoe UI, Arial, sans-serif" font-size="84" font-weight="800">pendline</text>
+    <!-- Bar chart decoration — varying heights, bottom-aligned at y=117 -->
+    <rect x="453" y="69" width="11" height="48" rx="5.5" fill="#FF8A00"/>
+    <rect x="465" y="47" width="11" height="70" rx="5.5" fill="#4DA3FF"/>
+    <rect x="477" y="83" width="11" height="34" rx="5.5" fill="#FFE082"/>
+  </g>
+
+  <!-- Tagline -->
+  <text x="72" y="168" fill="#B0CCDA" font-family="Segoe UI, Arial, sans-serif" font-size="28" font-weight="500" letter-spacing="1.5">LLM cost monitoring for production teams</text>
+</svg>
