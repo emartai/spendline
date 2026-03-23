@@ -9,13 +9,7 @@ import {
   Preview,
   Row,
   Section,
-  Table,
-  Tbody,
-  Td,
   Text,
-  Th,
-  Thead,
-  Tr,
 } from '@react-email/components'
 
 type DailyDigestProps = {
@@ -136,24 +130,24 @@ export default function DailyDigest({
             </Row>
           </Section>
 
-          <Table style={styles.table}>
-            <Thead>
-              <Tr>
-                <Th style={styles.th}>Model</Th>
-                <Th style={styles.th}>Spend</Th>
-                <Th style={styles.th}>Requests</Th>
-              </Tr>
-            </Thead>
-            <Tbody>
+          <table style={styles.table}>
+            <thead>
+              <tr>
+                <th style={styles.th}>Model</th>
+                <th style={styles.th}>Spend</th>
+                <th style={styles.th}>Requests</th>
+              </tr>
+            </thead>
+            <tbody>
               {modelBreakdown.map((item) => (
-                <Tr key={item.model}>
-                  <Td style={styles.td}>{item.model}</Td>
-                  <Td style={styles.td}>${item.spend_usd.toFixed(2)}</Td>
-                  <Td style={styles.td}>{item.requests}</Td>
-                </Tr>
+                <tr key={item.model}>
+                  <td style={styles.td}>{item.model}</td>
+                  <td style={styles.td}>${item.spend_usd.toFixed(2)}</td>
+                  <td style={styles.td}>{item.requests}</td>
+                </tr>
               ))}
-            </Tbody>
-          </Table>
+            </tbody>
+          </table>
 
           <Section>
             <Button href={dashboardUrl} style={styles.button}>

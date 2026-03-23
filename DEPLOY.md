@@ -2,7 +2,7 @@
 
 ## 1. Supabase Setup
 - Create a new Supabase project.
-- Run the SQL from [database/migrations/002_alert_history.sql](./database/migrations/002_alert_history.sql) and [database/migrations/003_profiles_preferences.sql](./database/migrations/003_profiles_preferences.sql).
+- Run the SQL from [database/migrations/001_initial.sql](./database/migrations/001_initial.sql), then [database/migrations/002_alert_history.sql](./database/migrations/002_alert_history.sql), then [database/migrations/003_profiles_preferences.sql](./database/migrations/003_profiles_preferences.sql).
 - Ensure the core MVP tables exist: `profiles`, `api_keys`, `requests`, `models`, `alert_settings`, `alert_history`.
 - Enable GitHub and email/password auth in Supabase Auth.
 - Copy:
@@ -20,6 +20,7 @@
 - Create a Resend account and verify your sending domain.
 - Copy:
   - `RESEND_API_KEY`
+  - `RESEND_FROM_EMAIL` for production, for example `alerts@yourdomain.com`
 - For development you can use `onboarding@resend.dev`.
 
 ## 4. Railway Deploy
@@ -33,6 +34,7 @@
   - `UPSTASH_REDIS_URL`
   - `UPSTASH_REDIS_TOKEN`
   - `RESEND_API_KEY`
+  - `RESEND_FROM_EMAIL=alerts@yourdomain.com`
   - `PORT=3001`
   - `NODE_ENV=production`
   - `CORS_ORIGIN=https://your-web-domain.vercel.app`
@@ -45,8 +47,15 @@
   - `NEXT_PUBLIC_SUPABASE_URL`
   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
   - `NEXT_PUBLIC_API_URL=https://your-api-domain.up.railway.app`
-  - `SUPABASE_SERVICE_KEY`
 - Confirm [apps/web/vercel.json](./apps/web/vercel.json) and [apps/web/next.config.js](./apps/web/next.config.js) are active.
+
+## 5.1 Auth URLs
+- In Supabase Authentication URL Configuration:
+  - Site URL: `https://your-web-domain.vercel.app`
+  - Redirect URL: `https://your-web-domain.vercel.app/auth/callback`
+- In GitHub OAuth App:
+  - Homepage URL: `https://your-web-domain.vercel.app`
+  - Authorization callback URL: `https://<your-project-ref>.supabase.co/auth/v1/callback`
 
 ## 6. Post-Deploy Checklist
 - Open `https://your-api-domain.up.railway.app/health` and confirm `{ "status": "ok" }`.

@@ -390,11 +390,6 @@ export function LogsPage() {
           }}>
             Clear filters
           </button>
-
-          <button type="button" className="secondary" onClick={() => void exportCsv()} disabled={isExporting}>
-            <Download size={16} strokeWidth={1.5} />
-            {isExporting ? "Exporting..." : "Export CSV"}
-          </button>
         </div>
       </section>
 
@@ -402,6 +397,10 @@ export function LogsPage() {
         <p>
           Showing {requests.length} of {total} requests
         </p>
+        <button type="button" className="secondary" onClick={() => void exportCsv()} disabled={isExporting}>
+          <Download size={16} strokeWidth={1.5} />
+          {isExporting ? "Exporting..." : "Export CSV"}
+        </button>
       </div>
 
       {isLoading ? (
@@ -588,6 +587,13 @@ export function LogsPage() {
         .pagination button:disabled {
           opacity: 0.5;
           cursor: not-allowed;
+        }
+
+        .results-bar {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
         }
 
         .results-bar p {

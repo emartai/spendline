@@ -1,8 +1,9 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
-import { DollarSign, TrendingDown, TrendingUp, Zap } from "lucide-react"
+import { DollarSign, TrendingDown, TrendingUp, X, Zap } from "lucide-react"
+import Link from "next/link"
 import {
   Area,
   AreaChart,
@@ -188,7 +189,7 @@ function ChangeBadge({ value }: { value: number }) {
 
   return (
     <span className={`change-badge ${decreased ? "good" : "bad"}`}>
-      {decreased ? <TrendingDown size={12} strokeWidth={1.5} /> : <TrendingUp size={12} strokeWidth={1.5} />}
+      {decreased ? <TrendingDown size={11} strokeWidth={1.5} /> : <TrendingUp size={11} strokeWidth={1.5} />}
       {formatPercent(value)}
     </span>
   )
@@ -205,17 +206,30 @@ function StatCard({
 }) {
   return (
     <article className="stat-card">
-      <div className="stat-top">
-        <p>{label}</p>
+      <p className="stat-label">{label}</p>
+      <strong className="stat-value">{value}</strong>
+      <div className="stat-footer">
         <ChangeBadge value={change} />
       </div>
-      <strong>{value}</strong>
     </article>
   )
 }
 
 export function OverviewPage() {
   const [interval, setInterval] = useState<Interval>("daily")
+  const [bannerDismissed, setBannerDismissed] = useState(true)
+
+  useEffect(() => {
+    const dismissed = localStorage.getItem("spendline-first-call-dismissed")
+    if (!dismissed) {
+      setBannerDismissed(false)
+    }
+  }, [])
+
+  function dismissBanner() {
+    localStorage.setItem("spendline-first-call-dismissed", "1")
+    setBannerDismissed(true)
+  }
 
   const { data: overview, error: overviewError } = useSWR<OverviewResponse>(
     "/v1/stats/overview",
@@ -273,9 +287,20 @@ export function OverviewPage() {
   }
 
   const topUsers = users?.users ?? []
+  const hasRequests = (overview?.total_requests ?? 0) > 0
+  const showBanner = hasRequests && !bannerDismissed
 
   return (
     <div className="overview">
+      {showBanner ? (
+        <div className="first-call-banner">
+          <span>🎉 First request tracked! Your LLM spend monitoring is live.</span>
+          <button type="button" onClick={dismissBanner} aria-label="Dismiss">
+            <X size={16} strokeWidth={1.5} />
+          </button>
+        </div>
+      ) : null}
+
       <section className="stats-grid">
         <StatCard
           label="Total This Month"
@@ -321,7 +346,14 @@ export function OverviewPage() {
         </div>
 
         <div className="chart-wrap">
-          <ResponsiveContainer width="100%" height={280}>
+          {(timeseries?.data?.length ?? 0) === 0 ? (
+            <div className="chart-empty">
+              <p className="chart-empty-heading">No spend data yet</p>
+              <p className="chart-empty-sub">Make your first tracked call to see your spend graph populate in real time.</p>
+              <Link className="chart-empty-link" href="/dashboard/api-keys">Go to API Keys →</Link>
+            </div>
+          ) : null}
+          <ResponsiveContainer width="100%" height={(timeseries?.data?.length ?? 0) === 0 ? 0 : 280}>
             <AreaChart data={timeseries?.data ?? []}>
               <defs>
                 <linearGradient id="spendlineArea" x1="0" x2="0" y1="0" y2="1">
@@ -513,35 +545,35 @@ export function OverviewPage() {
 
         .stat-card {
           padding: 20px 24px;
-        }
-
-        .stat-top {
           display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 12px;
-          margin-bottom: 14px;
+          flex-direction: column;
+          gap: 6px;
         }
 
-        .stat-top p {
+        .stat-label {
           margin: 0;
           color: #8b949e;
           font-size: 13px;
         }
 
-        .stat-card strong {
+        .stat-value {
           color: #e6edf3;
-          font-size: 32px;
-          font-weight: 700;
+          font-size: 28px;
+          font-weight: 600;
           letter-spacing: -0.03em;
+          line-height: 1.1;
+        }
+
+        .stat-footer {
+          margin-top: 4px;
         }
 
         .change-badge {
           display: inline-flex;
           align-items: center;
-          gap: 6px;
+          gap: 4px;
           border-radius: 4px;
-          padding: 2px 8px;
+          padding: 2px 6px;
           font-size: 12px;
           font-weight: 500;
         }
@@ -554,6 +586,78 @@ export function OverviewPage() {
         .change-badge.bad {
           background: rgba(248, 81, 73, 0.1);
           color: #f85149;
+        }
+
+        .first-call-banner {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+          border: 1px solid rgba(46, 204, 138, 0.3);
+          border-radius: 10px;
+          background: rgba(46, 204, 138, 0.08);
+          padding: 12px 16px;
+          color: #2ecc8a;
+          font-size: 14px;
+          font-weight: 500;
+        }
+
+        .first-call-banner button {
+          flex-shrink: 0;
+          border: none;
+          background: transparent;
+          color: #2ecc8a;
+          cursor: pointer;
+          display: inline-flex;
+          align-items: center;
+          opacity: 0.7;
+          transition: opacity 200ms ease;
+        }
+
+        .first-call-banner button:hover {
+          opacity: 1;
+        }
+
+        .chart-empty {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          height: 280px;
+          text-align: center;
+          padding: 32px;
+        }
+
+        .chart-empty-heading {
+          margin: 0 0 8px;
+          color: #e6edf3;
+          font-size: 16px;
+          font-weight: 600;
+        }
+
+        .chart-empty-sub {
+          margin: 0 0 20px;
+          color: #8b949e;
+          font-size: 14px;
+          max-width: 360px;
+          line-height: 1.6;
+        }
+
+        .chart-empty-link {
+          display: inline-flex;
+          align-items: center;
+          height: 36px;
+          border: 1px solid #2ecc8a;
+          border-radius: 8px;
+          padding: 0 16px;
+          color: #2ecc8a;
+          font-size: 14px;
+          font-weight: 500;
+          transition: background 200ms ease;
+        }
+
+        .chart-empty-link:hover {
+          background: rgba(46, 204, 138, 0.08);
         }
 
         .panel {

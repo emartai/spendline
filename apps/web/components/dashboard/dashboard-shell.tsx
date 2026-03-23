@@ -2,16 +2,7 @@
 
 import type { ReactNode } from "react"
 
-import {
-  Bell,
-  ExternalLink,
-  Key,
-  LayoutDashboard,
-  List,
-  Menu,
-  Settings,
-  X,
-} from "lucide-react"
+import { ExternalLink, Menu, X } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 
@@ -22,13 +13,61 @@ type DashboardShellProps = {
   userEmail: string
 }
 
+function NavIcon({ href }: { href: string }) {
+  switch (href) {
+    case "/dashboard":
+      return (
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="3" y="3" width="7" height="7" />
+          <rect x="14" y="3" width="7" height="7" />
+          <rect x="3" y="14" width="7" height="7" />
+          <rect x="14" y="14" width="7" height="7" />
+        </svg>
+      )
+    case "/dashboard/logs":
+      return (
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <line x1="8" y1="6" x2="21" y2="6" />
+          <line x1="8" y1="12" x2="21" y2="12" />
+          <line x1="8" y1="18" x2="21" y2="18" />
+          <circle cx="3" cy="6" r="1" />
+          <circle cx="3" cy="12" r="1" />
+          <circle cx="3" cy="18" r="1" />
+        </svg>
+      )
+    case "/dashboard/alerts":
+      return (
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+          <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+        </svg>
+      )
+    case "/dashboard/api-keys":
+      return (
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="7.5" cy="15.5" r="4.5" />
+          <path d="M21 2l-9.6 9.6M15.5 7.5l2 2L21 6l-2-2" />
+        </svg>
+      )
+    case "/dashboard/settings":
+      return (
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="3" />
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+        </svg>
+      )
+    default:
+      return null
+  }
+}
+
 const NAV_ITEMS = [
-  { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
-  { href: "/dashboard/logs", label: "Request Log", icon: List },
-  { href: "/dashboard/alerts", label: "Alerts", icon: Bell },
-  { href: "/dashboard/api-keys", label: "API Keys", icon: Key },
-  { href: "/dashboard/settings", label: "Settings", icon: Settings },
-] as const
+  { href: "/dashboard", label: "Overview" },
+  { href: "/dashboard/logs", label: "Request Log" },
+  { href: "/dashboard/alerts", label: "Alerts" },
+  { href: "/dashboard/api-keys", label: "API Keys" },
+  { href: "/dashboard/settings", label: "Settings" },
+]
 
 function getPageTitle(pathname: string) {
   const match = NAV_ITEMS.find((item) => item.href === pathname)
@@ -62,16 +101,45 @@ export function DashboardShell({ children, userEmail }: DashboardShellProps) {
           {NAV_ITEMS.map((item) => {
             const isActive =
               pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href))
-            const Icon = item.icon
 
             return (
               <Link
                 key={item.href}
                 className={`nav-item${isActive ? " active" : ""}`}
                 href={item.href}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "12px",
+                  height: "42px",
+                  padding: "0 14px",
+                  borderRadius: "10px",
+                  border: "1px solid transparent",
+                  background: isActive ? "rgba(255, 255, 255, 0.04)" : "transparent",
+                  boxShadow: isActive ? "inset 0 1px 0 rgba(255, 255, 255, 0.015)" : "none",
+                  color: isActive ? "#52d59e" : "#a3adba",
+                  fontSize: "13px",
+                  fontWeight: 500,
+                  lineHeight: 1,
+                }}
               >
-                <Icon size={18} strokeWidth={1.5} />
-                <span>{item.label}</span>
+                <span
+                  className="nav-icon"
+                  aria-hidden="true"
+                  style={{
+                    display: "inline-flex",
+                    width: "18px",
+                    minWidth: "18px",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "currentColor",
+                  }}
+                >
+                  <NavIcon href={item.href} />
+                </span>
+                <span className="nav-label" style={{ whiteSpace: "nowrap" }}>
+                  {item.label}
+                </span>
               </Link>
             )
           })}
@@ -134,22 +202,22 @@ export function DashboardShell({ children, userEmail }: DashboardShellProps) {
           top: 0;
           left: 0;
           z-index: 30;
-          display: flex;
           height: 100vh;
-          width: 240px;
+          display: flex;
+          width: 224px;
           flex-direction: column;
           border-right: 1px solid #21262d;
-          background: #0d1117;
+          background: #111722;
         }
 
         .sidebar-top {
-          padding: 20px 16px;
+          padding: 18px 16px 10px;
         }
 
         .logo {
           display: inline-flex;
           align-items: center;
-          font-size: 22px;
+          font-size: 20px;
           font-weight: 800;
           letter-spacing: -0.04em;
         }
@@ -159,33 +227,27 @@ export function DashboardShell({ children, userEmail }: DashboardShellProps) {
         }
 
         .nav {
-          margin-top: 8px;
+          margin-top: 10px;
           display: flex;
           flex-direction: column;
+          gap: 6px;
+          padding: 0 10px;
         }
 
         .nav-item {
-          display: flex;
-          height: 40px;
-          align-items: center;
-          gap: 10px;
-          border-left: 2px solid transparent;
-          padding: 0 16px;
-          color: #8b949e;
-          font-size: 14px;
-          font-weight: 500;
-          transition: background 150ms ease, color 150ms ease, border-color 150ms ease;
+          transition: background 150ms ease, color 150ms ease, border-color 150ms ease, box-shadow 150ms ease;
         }
 
         .nav-item:hover {
-          background: #161b22;
+          background: rgba(255, 255, 255, 0.03);
           color: #e6edf3;
         }
 
         .nav-item.active {
-          border-left-color: #2ecc8a;
-          background: rgba(46, 204, 138, 0.05);
-          color: #2ecc8a;
+          border-color: rgba(29, 158, 117, 0.08);
+          background: rgba(255, 255, 255, 0.04);
+          box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.015);
+          color: #52d59e;
         }
 
         .sidebar-bottom {
@@ -220,7 +282,7 @@ export function DashboardShell({ children, userEmail }: DashboardShellProps) {
         }
 
         .content {
-          margin-left: 240px;
+          margin-left: 224px;
           min-height: 100vh;
           background: #0d0f14;
         }
@@ -286,7 +348,7 @@ export function DashboardShell({ children, userEmail }: DashboardShellProps) {
           }
 
           .sidebar {
-            transform: translateX(-240px);
+            transform: translateX(-224px);
             transition: transform 250ms ease;
             box-shadow: 24px 0 48px rgba(0, 0, 0, 0.25);
           }
@@ -317,7 +379,7 @@ export function DashboardShell({ children, userEmail }: DashboardShellProps) {
           .drawer-close {
             position: fixed;
             top: 14px;
-            left: 192px;
+            left: 176px;
             z-index: 31;
             display: inline-flex;
             height: 36px;

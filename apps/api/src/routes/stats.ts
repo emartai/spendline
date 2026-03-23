@@ -27,7 +27,7 @@ type ModelLookupRow = {
 type Interval = 'hourly' | 'daily' | 'weekly'
 
 type TimeseriesRow = {
-  timestamp: string
+  bucket: string
   spend_usd: number | string
   requests: number | string
 }
@@ -254,7 +254,7 @@ export const statsRoutes: FastifyPluginAsync = async (app) => {
       return reply.status(200).send({
         interval,
         data: ((data ?? []) as TimeseriesRow[]).map((row) => ({
-          timestamp: row.timestamp,
+          timestamp: row.bucket,
           spend_usd: roundTo(toNumber(row.spend_usd), 8),
           requests: Number(row.requests),
         })),

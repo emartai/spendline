@@ -49,13 +49,18 @@ async function fetchWithAuth<T>(path: string, init?: RequestInit): Promise<T> {
     throw new Error("Missing session")
   }
 
+  const headers: Record<string, string> = {
+    Authorization: `Bearer ${session.access_token}`,
+    ...(init?.headers as Record<string, string> | undefined),
+  }
+
+  if (init?.body !== undefined && !("Content-Type" in headers)) {
+    headers["Content-Type"] = "application/json"
+  }
+
   const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${path}`, {
     ...init,
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${session.access_token}`,
-      ...(init?.headers ?? {}),
-    },
+    headers,
   })
 
   if (!response.ok) {
@@ -78,17 +83,23 @@ async function fetchWithAuth<T>(path: string, init?: RequestInit): Promise<T> {
   return response.json() as Promise<T>
 }
 
-function formatDate(value: string | null) {
-  if (!value) {
-    return "Never"
-  }
+function formatRelativeTime(value: string | null) {
+  if (!value) return "Never"
+
+  const diff = Date.now() - new Date(value).getTime()
+  const minutes = Math.floor(diff / 60_000)
+  const hours = Math.floor(diff / 3_600_000)
+  const days = Math.floor(diff / 86_400_000)
+
+  if (minutes < 1) return "Just now"
+  if (minutes < 60) return `${minutes}m ago`
+  if (hours < 24) return `${hours}h ago`
+  if (days < 30) return `${days}d ago`
 
   return new Intl.DateTimeFormat("en-US", {
     month: "short",
     day: "numeric",
     year: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
   }).format(new Date(value))
 }
 
@@ -333,12 +344,15 @@ export function ApiKeysPage() {
         </div>
 
         <div className="create-row">
-          <input
-            type="text"
-            placeholder="e.g. Production, Staging"
-            value={keyName}
-            onChange={(event) => setKeyName(event.target.value)}
-          />
+          <label className="key-name-field">
+            <span>Key name</span>
+            <input
+              type="text"
+              placeholder="e.g. Production, Staging"
+              value={keyName}
+              onChange={(event) => setKeyName(event.target.value)}
+            />
+          </label>
           <button type="button" className="primary" onClick={() => void handleCreateKey()} disabled={isCreating}>
             <Key size={16} strokeWidth={1.5} />
             {isCreating ? "Generating..." : "Generate Key"}
@@ -365,17 +379,20 @@ export function ApiKeysPage() {
             <div className="table-head">
               <span>Name</span>
               <span>Key</span>
-              <span>Created</span>
-              <span>Last Used</span>
               <span>Actions</span>
             </div>
 
             {data?.api_keys.map((apiKey) => (
               <div key={apiKey.id} className="table-row">
                 <span>{apiKey.name}</span>
-                <span className="mono">{apiKey.key_prefix}...</span>
-                <span>{formatDate(apiKey.created_at)}</span>
-                <span>{formatDate(apiKey.last_used_at)}</span>
+                <span className="key-cell">
+                  <span className="mono">{apiKey.key_prefix}...</span>
+                  <span className="key-meta">
+                    Created {formatRelativeTime(apiKey.created_at)}
+                    {" · "}
+                    {apiKey.last_used_at ? `Last used ${formatRelativeTime(apiKey.last_used_at)}` : "Never used"}
+                  </span>
+                </span>
                 <span>
                   <button type="button" className="danger-ghost" onClick={() => setPendingRevoke(apiKey)}>
                     <Trash2 size={16} strokeWidth={1.5} />
@@ -529,6 +546,23 @@ export function ApiKeysPage() {
           display: grid;
           grid-template-columns: minmax(0, 1fr) auto;
           gap: 12px;
+          align-items: end;
+        }
+
+        .key-name-field {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
+
+        .key-name-field span {
+          color: #8b949e;
+          font-size: 13px;
+        }
+
+        .meta-time {
+          color: #8b949e;
+          font-size: 13px;
         }
 
         input {
@@ -626,10 +660,21 @@ export function ApiKeysPage() {
         .table-head,
         .table-row {
           display: grid;
-          grid-template-columns: 1fr 0.9fr 1fr 1fr 0.7fr;
+          grid-template-columns: 1fr 1.6fr 0.6fr;
           gap: 16px;
           align-items: center;
           padding: 12px 16px;
+        }
+
+        .key-cell {
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+        }
+
+        .key-meta {
+          color: #8b949e;
+          font-size: 12px;
         }
 
         .table-head {
@@ -826,7 +871,7 @@ export function ApiKeysPage() {
 
           .table-head,
           .table-row {
-            min-width: 760px;
+            min-width: 480px;
           }
 
           .modal-panel {

@@ -27,8 +27,15 @@ if (!resendApiKey) {
 }
 
 const resend = new Resend(resendApiKey)
+const configuredFromAddress = process.env.RESEND_FROM_EMAIL
+
+if (process.env.NODE_ENV === 'production' && !configuredFromAddress) {
+  throw new Error('RESEND_FROM_EMAIL is required in production')
+}
+
 const fromAddress =
-  process.env.NODE_ENV === 'production' ? 'alerts@yourdomain.com' : 'onboarding@resend.dev'
+  configuredFromAddress ??
+  (process.env.NODE_ENV === 'production' ? 'alerts@yourdomain.com' : 'onboarding@resend.dev')
 
 export async function sendSpendAlert(props: SpendAlertProps): Promise<void> {
   await resend.emails.send({

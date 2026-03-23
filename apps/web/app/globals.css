@@ -113,17 +113,17 @@ input {
 .landing-headline {
   margin: 28px 0 0;
   color: var(--text-primary);
-  font-size: 64px;
-  font-weight: 800;
-  line-height: 1;
-  letter-spacing: -2px;
+  font-size: 48px;
+  font-weight: 500;
+  line-height: 1.1;
+  letter-spacing: -1px;
 }
 
 .landing-headline-line {
   display: block;
 }
 
-.landing-headline span {
+.landing-headline .landing-headline-line span {
   color: var(--green);
 }
 
@@ -213,10 +213,26 @@ input {
   padding: 32px;
 }
 
+.landing-social-proof {
+  margin-bottom: 20px;
+  padding: 10px 14px;
+  border: 1px solid #2ecc8a33;
+  border-radius: 8px;
+  background: rgba(46, 204, 138, 0.05);
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.landing-social-proof strong {
+  color: var(--green);
+  font-weight: 600;
+}
+
 .landing-auth-copy h2 {
   margin: 0 0 8px;
   color: var(--text-primary);
-  font-size: 28px;
+  font-size: 22px;
   font-weight: 700;
   line-height: 1.2;
   letter-spacing: -0.5px;
@@ -225,7 +241,7 @@ input {
 .landing-auth-copy p {
   margin: 0 0 24px;
   color: var(--text-secondary);
-  font-size: 15px;
+  font-size: 14px;
   line-height: 1.6;
 }
 

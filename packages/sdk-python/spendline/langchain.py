@@ -2,6 +2,7 @@
 
 import os
 import time
+import uuid
 from datetime import datetime, timezone
 
 from .client import get_client
@@ -98,6 +99,7 @@ class SpendlineCallbackHandler(_BaseCallbackHandler):
                 "unknown_model": unknown_model,
                 "workflow_id": self.workflow_id,
                 "session_id": self.session_id,
+                "request_id": str(uuid.uuid4()),
                 "metadata": None,
                 "timestamp": datetime.now(timezone.utc).isoformat(),
             }
@@ -131,6 +133,7 @@ class SpendlineCallbackHandler(_BaseCallbackHandler):
                 "unknown_model": model == "unknown",
                 "workflow_id": self.workflow_id,
                 "session_id": self.session_id,
+                "request_id": str(uuid.uuid4()),
                 "metadata": _truncate_metadata({"error": True}),
                 "timestamp": datetime.now(timezone.utc).isoformat(),
             }

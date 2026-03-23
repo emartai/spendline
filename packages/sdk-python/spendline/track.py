@@ -2,6 +2,7 @@
 
 import os
 import time
+import uuid
 from datetime import datetime, timezone
 
 from .client import get_client
@@ -87,6 +88,7 @@ def _record_response(
         "unknown_model": unknown_model,
         "workflow_id": workflow_id,
         "session_id": session_id,
+        "request_id": str(uuid.uuid4()),
         "metadata": _truncate_metadata(metadata),
         "timestamp": datetime.now(timezone.utc).isoformat(),
     }

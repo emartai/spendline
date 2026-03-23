@@ -24,7 +24,7 @@ CREATE OR REPLACE FUNCTION get_request_timeseries(
   p_start TIMESTAMPTZ
 )
 RETURNS TABLE (
-  timestamp TIMESTAMPTZ,
+  bucket TIMESTAMPTZ,
   spend_usd NUMERIC,
   requests BIGINT
 )
@@ -32,7 +32,15 @@ LANGUAGE SQL
 SECURITY DEFINER
 AS $$
   SELECT
-    time_bucket(p_bucket, timestamp) AS timestamp,
+    date_trunc(
+      CASE
+        WHEN p_bucket = INTERVAL '1 hour'  THEN 'hour'
+        WHEN p_bucket = INTERVAL '1 day'   THEN 'day'
+        WHEN p_bucket = INTERVAL '1 week'  THEN 'week'
+        ELSE 'hour'
+      END,
+      timestamp
+    ) AS bucket,
     COALESCE(SUM(cost_usd), 0) AS spend_usd,
     COUNT(*)::BIGINT AS requests
   FROM requests

@@ -5,6 +5,7 @@ import Fastify from 'fastify'
 
 import { startAlertJobs } from './jobs/alerts.js'
 import { apikeyRoutes } from './routes/apikeys.js'
+import { accountRoutes } from './routes/account.js'
 import { alertRoutes } from './routes/alerts.js'
 import { ingestRoutes } from './routes/ingest.js'
 import { modelRoutes } from './routes/models.js'
@@ -36,6 +37,7 @@ async function buildServer() {
   await app.register(ingestRoutes)
   await app.register(statsRoutes)
   await app.register(apikeyRoutes)
+  await app.register(accountRoutes)
   await app.register(alertRoutes)
   await app.register(modelRoutes)
 

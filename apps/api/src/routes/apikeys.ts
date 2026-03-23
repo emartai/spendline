@@ -15,7 +15,12 @@ type ApiKeyRow = {
   last_used_at: string | null
 }
 
-async function requireUserId(request: FastifyRequest): Promise<string | null> {
+type AuthenticatedUser = {
+  id: string
+  email: string | null
+}
+
+async function requireUser(request: FastifyRequest): Promise<AuthenticatedUser | null> {
   const authHeader = request.headers.authorization
   const token = authHeader?.replace('Bearer ', '').trim()
 
@@ -32,7 +37,26 @@ async function requireUserId(request: FastifyRequest): Promise<string | null> {
     return null
   }
 
-  return user.id
+  return {
+    id: user.id,
+    email: user.email ?? null,
+  }
+}
+
+async function ensureProfile(user: AuthenticatedUser): Promise<void> {
+  const { error } = await supabaseService
+    .from('profiles')
+    .upsert(
+      {
+        id: user.id,
+        email: user.email ?? '',
+      },
+      { onConflict: 'id' },
+    )
+
+  if (error) {
+    throw error
+  }
 }
 
 function hasHtml(value: string): boolean {
@@ -64,16 +88,16 @@ function validateApiKeyName(value: unknown): { name?: string; error?: string } {
 export const apikeyRoutes: FastifyPluginAsync = async (app) => {
   app.get('/v1/apikeys', async (request, reply) => {
     try {
-      const userId = await requireUserId(request)
+      const user = await requireUser(request)
 
-      if (!userId) {
+      if (!user) {
         return reply.status(401).send({ error: 'Unauthorized', code: 401 })
       }
 
       const { data, error } = await supabaseService
         .from('api_keys')
         .select('id, name, key_prefix, created_at, last_used_at')
-        .eq('user_id', userId)
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false })
 
       if (error) {
@@ -101,9 +125,9 @@ export const apikeyRoutes: FastifyPluginAsync = async (app) => {
 
   app.post('/v1/apikeys', async (request, reply) => {
     try {
-      const userId = await requireUserId(request)
+      const user = await requireUser(request)
 
-      if (!userId) {
+      if (!user) {
         return reply.status(401).send({ error: 'Unauthorized', code: 401 })
       }
 
@@ -119,10 +143,11 @@ export const apikeyRoutes: FastifyPluginAsync = async (app) => {
       }
 
       const generatedKey = generateApiKey()
+      await ensureProfile(user)
       const { data, error } = await supabaseService
         .from('api_keys')
         .insert({
-          user_id: userId,
+          user_id: user.id,
           key_hash: generatedKey.hash,
           key_prefix: generatedKey.prefix,
           name,
@@ -162,9 +187,9 @@ export const apikeyRoutes: FastifyPluginAsync = async (app) => {
 
   app.delete('/v1/apikeys/:id', async (request, reply) => {
     try {
-      const userId = await requireUserId(request)
+      const user = await requireUser(request)
 
-      if (!userId) {
+      if (!user) {
         return reply.status(401).send({ error: 'Unauthorized', code: 401 })
       }
 
@@ -177,7 +202,7 @@ export const apikeyRoutes: FastifyPluginAsync = async (app) => {
         })
       }
 
-      await revokeApiKey(params.id, userId)
+      await revokeApiKey(params.id, user.id)
       return reply.status(204).send()
     } catch (error) {
       if (error instanceof ApiKeyNotFoundError) {

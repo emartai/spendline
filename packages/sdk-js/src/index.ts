@@ -15,6 +15,14 @@ const DISABLED = () => process.env.SPENDLINE_DISABLE === "true"
 const LOG_ENABLED = () => process.env.SPENDLINE_LOG === "true"
 const buffers = new Map<string, BatchBuffer>()
 
+function createRequestId() {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID()
+  }
+
+  return `${Date.now()}-${Math.random().toString(16).slice(2)}`
+}
+
 function detectProvider(model: string) {
   if (model.startsWith("claude-")) return "anthropic"
   if (model.startsWith("gpt-")) return "openai"
@@ -114,6 +122,7 @@ async function recordResponse(
     unknown_model: unknownModel,
     workflow_id: options?.workflowId,
     session_id: options?.sessionId,
+    request_id: createRequestId(),
     metadata: truncateMetadata(options?.metadata),
     timestamp: new Date().toISOString(),
   }
@@ -157,6 +166,16 @@ export class Spendline {
       apiKey: this.apiKey,
       apiUrl: this.apiUrl,
     })
+  }
+}
+
+export function clearRuntimeState() {
+  buffers.clear()
+}
+
+export function flushRuntimeBuffers() {
+  for (const buffer of buffers.values()) {
+    buffer.flush()
   }
 }
 

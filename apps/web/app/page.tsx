@@ -2,13 +2,19 @@ import { CheckCircle2, Github } from 'lucide-react'
 
 import { signInWithEmail, signInWithGitHub, signUpWithEmail } from './actions/auth'
 
+async function signInWithGitHubAction() {
+  'use server'
+
+  await signInWithGitHub()
+}
+
 async function signInWithEmailAction(formData: FormData) {
   'use server'
 
   const email = String(formData.get('email') ?? '')
   const password = String(formData.get('password') ?? '')
 
-  return signInWithEmail(email, password)
+  await signInWithEmail(email, password)
 }
 
 async function signUpWithEmailAction(formData: FormData) {
@@ -17,7 +23,7 @@ async function signUpWithEmailAction(formData: FormData) {
   const email = String(formData.get('email') ?? '')
   const password = String(formData.get('password') ?? '')
 
-  return signUpWithEmail(email, password)
+  await signUpWithEmail(email, password)
 }
 
 export default function Home() {
@@ -41,7 +47,7 @@ export default function Home() {
             <h1 className="landing-headline">
               <span className="landing-headline-line">Track and control</span>
               <span className="landing-headline-line">
-                your <span>LLM spend</span> in
+                your LLM <span>spend</span> in
               </span>
               <span className="landing-headline-line">real time</span>
             </h1>
@@ -102,12 +108,16 @@ export default function Home() {
           </section>
 
           <section className="landing-auth-card">
+            <div className="landing-social-proof">
+              Tracking <strong>$2.4M</strong> in LLM spend this month — join <strong>50+</strong> developers.
+            </div>
+
             <div className="landing-auth-copy">
-              <h2>Access Terminal</h2>
+              <h2>Get started</h2>
               <p>LLM cost monitoring for high-performance teams.</p>
             </div>
 
-            <form action={signInWithGitHub}>
+            <form action={signInWithGitHubAction}>
               <button className="landing-github-button" type="submit">
                 <Github size={18} strokeWidth={1.5} />
                 <span>Continue with GitHub</span>

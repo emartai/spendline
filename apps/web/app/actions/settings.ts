@@ -1,9 +1,31 @@
 "use server"
 
 import { redirect } from "next/navigation"
-import { createClient } from "@supabase/supabase-js"
 
 import { createServerClient } from "../../lib/supabase/server"
+
+function getApiUrl() {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL
+
+  if (!apiUrl) {
+    throw new Error("Missing NEXT_PUBLIC_API_URL.")
+  }
+
+  return apiUrl.replace(/\/$/, "")
+}
+
+async function getAuthenticatedContext() {
+  const supabase = createServerClient()
+  const {
+    data: { session },
+  } = await supabase.auth.getSession()
+
+  if (!session?.access_token || !session.user) {
+    redirect("/")
+  }
+
+  return { supabase, accessToken: session.access_token }
+}
 
 export async function requestPasswordReset(email: string) {
   const supabase = createServerClient()
@@ -17,39 +39,35 @@ export async function requestPasswordReset(email: string) {
   return { success: true }
 }
 
-export async function deleteAccount() {
-  const supabase = createServerClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  if (!user) {
-    redirect("/")
-  }
-
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const serviceKey = process.env.SUPABASE_SERVICE_KEY
-
-  if (!supabaseUrl || !serviceKey) {
-    throw new Error("Missing SUPABASE_SERVICE_KEY for account deletion.")
-  }
-
-  const admin = createClient(supabaseUrl, serviceKey, {
-    auth: {
-      persistSession: false,
-      autoRefreshToken: false,
+export async function deleteAllData() {
+  const { accessToken } = await getAuthenticatedContext()
+  const response = await fetch(`${getApiUrl()}/v1/account/data`, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
     },
+    cache: "no-store",
   })
 
-  await admin.from("alert_settings").delete().eq("user_id", user.id)
-  await admin.from("api_keys").delete().eq("user_id", user.id)
-  await admin.from("requests").delete().eq("user_id", user.id)
-  await admin.from("profiles").delete().eq("id", user.id)
+  if (!response.ok) {
+    throw new Error("Unable to delete account data.")
+  }
 
-  const { error } = await admin.auth.admin.deleteUser(user.id)
+  redirect("/dashboard")
+}
 
-  if (error) {
-    throw new Error(error.message)
+export async function deleteAccount() {
+  const { supabase, accessToken } = await getAuthenticatedContext()
+  const response = await fetch(`${getApiUrl()}/v1/account`, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+    cache: "no-store",
+  })
+
+  if (!response.ok) {
+    throw new Error("Unable to delete account.")
   }
 
   await supabase.auth.signOut()

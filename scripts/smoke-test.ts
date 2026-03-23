@@ -1,3 +1,6 @@
+import { readFileSync } from "node:fs"
+import { resolve } from "node:path"
+
 type SummaryItem = {
   step: string
   passed: boolean
@@ -11,8 +14,36 @@ type StatsOverview = {
 
 const BASE_URL = process.env.BASE_URL
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY
-const SUPABASE_URL = process.env.SUPABASE_URL
-const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY
+
+function loadEnvFile(relativePath: string) {
+  try {
+    const file = readFileSync(resolve(process.cwd(), relativePath), "utf8")
+    const entries = file
+      .split(/\r?\n/u)
+      .map((line) => line.trim())
+      .filter((line) => line && !line.startsWith("#"))
+      .map((line) => {
+        const separator = line.indexOf("=")
+
+        if (separator === -1) {
+          return null
+        }
+
+        return [line.slice(0, separator).trim(), line.slice(separator + 1).trim()] as const
+      })
+      .filter((entry): entry is readonly [string, string] => entry !== null)
+
+    return Object.fromEntries(entries)
+  } catch {
+    return {}
+  }
+}
+
+const apiEnv = loadEnvFile("apps/api/.env")
+const webEnv = loadEnvFile("apps/web/.env.local")
+const SUPABASE_URL = process.env.SUPABASE_URL ?? apiEnv.SUPABASE_URL ?? webEnv.NEXT_PUBLIC_SUPABASE_URL
+const SUPABASE_ANON_KEY =
+  process.env.SUPABASE_ANON_KEY ?? apiEnv.SUPABASE_ANON_KEY ?? webEnv.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
 if (!BASE_URL || !SUPABASE_SERVICE_KEY) {
   throw new Error("BASE_URL and SUPABASE_SERVICE_KEY are required.")
@@ -93,13 +124,18 @@ async function signInUser() {
 }
 
 async function authedFetch(path: string, init?: RequestInit) {
+  const headers: Record<string, string> = {
+    Authorization: `Bearer ${jwt}`,
+    ...(init?.headers as Record<string, string> | undefined),
+  }
+
+  if (init?.body !== undefined && !("Content-Type" in headers)) {
+    headers["Content-Type"] = "application/json"
+  }
+
   return fetch(`${BASE_URL}${path}`, {
     ...init,
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${jwt}`,
-      ...(init?.headers ?? {}),
-    },
+    headers,
   })
 }
 
@@ -218,8 +254,18 @@ async function assertModels() {
   }
 
   const providers = new Set((payload.models ?? []).map((item: { provider: string }) => item.provider))
-  if (!providers.has("anthropic") || !providers.has("openai") || !providers.has("google") || !providers.has("deepseek")) {
-    throw new Error("Expected core providers in model breakdown.")
+  if (
+    !providers.has("anthropic") ||
+    !providers.has("openai") ||
+    !providers.has("google") ||
+    !providers.has("deepseek") ||
+    !providers.has("unknown")
+  ) {
+    throw new Error("Expected anthropic, openai, google, deepseek, and unknown providers in model breakdown.")
+  }
+
+  if (!(payload.models ?? []).some((item: { model_id: string }) => item.model_id === "unknown-model-xyz")) {
+    throw new Error("Expected unknown model to be visible in model breakdown.")
   }
 }
 
@@ -298,9 +344,20 @@ async function deleteTestUser() {
     throw new Error("Unable to delete test user.")
   }
 
-  const requestsResponse = await authedFetch("/v1/stats/requests")
-  if (requestsResponse.status !== 401) {
-    throw new Error("Expected deleted user session to lose dashboard access.")
+  const requestsResponse = await fetch(`${SUPABASE_URL}/rest/v1/requests?user_id=eq.${userId}&select=id`, {
+    headers: {
+      apikey: SUPABASE_SERVICE_KEY,
+      Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
+    },
+  })
+
+  if (!requestsResponse.ok) {
+    throw new Error("Unable to verify deleted user cleanup.")
+  }
+
+  const requestsPayload = (await requestsResponse.json()) as Array<{ id: string }>
+  if (requestsPayload.length !== 0) {
+    throw new Error("Expected deleted user request data to be removed.")
   }
 }
 

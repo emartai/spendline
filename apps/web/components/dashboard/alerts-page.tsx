@@ -46,13 +46,18 @@ async function fetchWithAuth<T>(path: string, init?: RequestInit): Promise<T> {
     throw new Error("Missing session")
   }
 
+  const headers: Record<string, string> = {
+    Authorization: `Bearer ${session.access_token}`,
+    ...(init?.headers as Record<string, string> | undefined),
+  }
+
+  if (init?.body !== undefined && !("Content-Type" in headers)) {
+    headers["Content-Type"] = "application/json"
+  }
+
   const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${path}`, {
     ...init,
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${session.access_token}`,
-      ...(init?.headers ?? {}),
-    },
+    headers,
   })
 
   if (!response.ok) {
@@ -120,7 +125,7 @@ function Toggle({
         }
 
         .toggle.on {
-          background: #2ecc8a;
+          background: #1D9E75;
         }
 
         .toggle:disabled {
@@ -405,20 +410,22 @@ export function AlertsPage() {
           </div>
         </div>
 
-        <div className="progress-wrap">
-          <div className="progress-track">
-            <div
-              className="progress-fill"
-              style={{
-                width: `${progress}%`,
-                background: progressColor,
-              }}
-            />
+        {hasThreshold ? (
+          <div className="progress-wrap">
+            <div className="progress-track">
+              <div
+                className="progress-fill"
+                style={{
+                  width: `${progress}%`,
+                  background: progressColor,
+                }}
+              />
+            </div>
+            <p>
+              Current spend: {formatCurrency(currentSpend)} / {formatCurrency(thresholdValue)}
+            </p>
           </div>
-          <p>
-            Current spend: {formatCurrency(currentSpend)} / {hasThreshold ? formatCurrency(thresholdValue) : "$0.00"}
-          </p>
-        </div>
+        ) : null}
 
         <div className="actions">
           <button type="button" className="primary" onClick={() => void saveThreshold()} disabled={isSavingThreshold}>

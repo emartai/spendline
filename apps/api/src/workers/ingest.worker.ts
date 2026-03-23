@@ -1,27 +1,10 @@
 import { Queue, Worker, type Job } from 'bullmq'
-import IORedis from 'ioredis'
 
 import { supabaseService } from '../lib/supabase.js'
-import type { IngestJob } from '../lib/queue.js'
+import { bullMqConnection, type IngestJob } from '../lib/queue.js'
 
-const redisUrl = process.env.UPSTASH_REDIS_URL
-const redisToken = process.env.UPSTASH_REDIS_TOKEN
-
-if (!redisUrl) {
-  throw new Error('UPSTASH_REDIS_URL is required')
-}
-
-if (!redisToken) {
-  throw new Error('UPSTASH_REDIS_TOKEN is required')
-}
-
-const connection = new IORedis(redisUrl, {
-  maxRetriesPerRequest: null,
-  password: redisToken,
-})
-
-const deadLetterQueue = new Queue<IngestJob>('ingest-dlq', {
-  connection,
+const deadLetterQueue = new Queue<IngestJob, void, string>('ingest-dlq', {
+  connection: bullMqConnection,
 })
 
 type RequestDuplicateCheck = {
@@ -99,7 +82,7 @@ async function pushToDeadLetterQueue(job: Job<IngestJob>, error: Error): Promise
 
 export function startWorker(): Worker<IngestJob> {
   const worker = new Worker<IngestJob>('ingest', processIngest, {
-    connection,
+    connection: bullMqConnection,
   })
 
   worker.on('failed', (job, error) => {

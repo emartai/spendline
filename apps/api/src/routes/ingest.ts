@@ -357,7 +357,9 @@ export const ingestRoutes: FastifyPluginAsync = async (app) => {
         if (
           sanitizedEvents.length > 0 &&
           sanitizedEvents.every(
-            (event) => Boolean(event.requestId) && existingRequestIds.has(event.requestId),
+            (event) =>
+              typeof event.requestId === 'string' &&
+              existingRequestIds.has(event.requestId),
           )
         ) {
           return reply.status(200).send({ received: true, duplicate: true })

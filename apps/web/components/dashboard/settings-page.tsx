@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from "react"
 import { AlertTriangle, Download, KeyRound, Trash2 } from "lucide-react"
 import useSWR from "swr"
 
-import { deleteAccount, requestPasswordReset } from "../../app/actions/settings"
+import { deleteAccount, deleteAllData, requestPasswordReset } from "../../app/actions/settings"
 import { createBrowserClient } from "../../lib/supabase/client"
 import { useToast } from "../ui/toast"
 
@@ -94,7 +94,9 @@ export function SettingsPage() {
   const [isExporting, setIsExporting] = useState(false)
   const [isResetting, setIsResetting] = useState(false)
   const [isDeleteOpen, setIsDeleteOpen] = useState(false)
+  const [isDeleteDataOpen, setIsDeleteDataOpen] = useState(false)
   const [confirmText, setConfirmText] = useState("")
+  const [confirmDataText, setConfirmDataText] = useState("")
   const [passwordMessage, setPasswordMessage] = useState("")
 
   const timezoneOptions = useMemo(() => getTimezones(), [])
@@ -343,11 +345,25 @@ export function SettingsPage() {
         </button>
       </section>
 
+      <section className="card warning">
+        <div className="header">
+          <div>
+            <h2>Delete All Data</h2>
+            <p>Permanently removes all tracked requests and alert settings. Your account and API keys remain intact.</p>
+          </div>
+        </div>
+
+        <button className="warning-button" type="button" onClick={() => setIsDeleteDataOpen(true)}>
+          <Trash2 size={16} strokeWidth={1.5} />
+          Delete All My Data
+        </button>
+      </section>
+
       <section className="card danger">
         <div className="header">
           <div>
-            <h2>Danger Zone</h2>
-            <p>This permanently deletes your account, keys, requests, and alert settings.</p>
+            <h2>Delete Account</h2>
+            <p>Permanently deletes your account, all API keys, request history, and alert settings. This cannot be undone.</p>
           </div>
         </div>
 
@@ -357,11 +373,44 @@ export function SettingsPage() {
         </button>
       </section>
 
+      {isDeleteDataOpen ? (
+        <div className="modal-backdrop">
+          <div className="modal warning-modal">
+            <h3>Delete all data?</h3>
+            <p>This permanently removes all your tracked requests and alert settings. Your account and API keys will remain.</p>
+            <label className="label" htmlFor="delete-data-confirmation">
+              Type <strong>delete my data</strong> to confirm
+            </label>
+            <input
+              id="delete-data-confirmation"
+              value={confirmDataText}
+              onChange={(event) => setConfirmDataText(event.target.value)}
+              placeholder="delete my data"
+              type="text"
+            />
+            <div className="modal-actions">
+              <button className="secondary" type="button" onClick={() => setIsDeleteDataOpen(false)}>
+                Cancel
+              </button>
+              <form action={deleteAllData}>
+                <button
+                  className="warning-button"
+                  disabled={confirmDataText !== "delete my data"}
+                  type="submit"
+                >
+                  Delete All Data
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
       {isDeleteOpen ? (
         <div className="modal-backdrop">
           <div className="modal">
             <h3>Delete account</h3>
-            <p>This will permanently delete all your data.</p>
+            <p>This will permanently delete your account and all associated data.</p>
             <label className="label" htmlFor="delete-confirmation">
               Type <strong>delete my account</strong> to confirm
             </label>
@@ -402,6 +451,10 @@ export function SettingsPage() {
           border-radius: 12px;
           background: #161b22;
           padding: 24px;
+        }
+
+        .warning {
+          border-color: rgba(210, 153, 34, 0.3);
         }
 
         .danger {
@@ -465,6 +518,7 @@ export function SettingsPage() {
 
         .primary,
         .secondary,
+        .warning-button,
         .danger-button {
           display: inline-flex;
           align-items: center;
@@ -488,6 +542,12 @@ export function SettingsPage() {
           color: #e6edf3;
         }
 
+        .warning-button {
+          border: 1px solid rgba(210, 153, 34, 0.4);
+          background: rgba(210, 153, 34, 0.1);
+          color: #d29922;
+        }
+
         .danger-button {
           border: 1px solid rgba(248, 81, 73, 0.35);
           background: rgba(248, 81, 73, 0.12);
@@ -502,6 +562,7 @@ export function SettingsPage() {
 
         .primary:disabled,
         .secondary:disabled,
+        .warning-button:disabled,
         .danger-button:disabled {
           opacity: 0.6;
           cursor: not-allowed;
@@ -524,6 +585,10 @@ export function SettingsPage() {
           border-radius: 16px;
           background: #161b22;
           padding: 24px;
+        }
+
+        .warning-modal {
+          border-color: rgba(210, 153, 34, 0.3);
         }
 
         .modal h3 {
