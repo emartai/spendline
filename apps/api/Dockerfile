@@ -15,7 +15,7 @@ COPY . .
 
 RUN pnpm --filter @spendline/api build
 
-RUN pnpm --filter @spendline/api deploy --prod /prod/api
+RUN pnpm --filter @spendline/api deploy --prod --legacy /prod/api
 
 FROM node:20-alpine AS runner
 
