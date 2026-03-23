@@ -377,3 +377,4 @@ export function detectProvider(modelId: string): string {
   return 'unknown'
 }
 ```
+done
