@@ -15,15 +15,17 @@ COPY . .
 
 RUN pnpm --filter @spendline/api build
 
+RUN pnpm --filter @spendline/api deploy --prod /prod/api
+
 FROM node:20-alpine AS runner
 
 WORKDIR /app
 
 RUN addgroup -S spendline && adduser -S spendline -G spendline
 
+COPY --from=builder /prod/api/node_modules ./node_modules
 COPY --from=builder /app/apps/api/dist ./dist
 COPY --from=builder /app/apps/api/package.json ./package.json
-COPY --from=builder /app/node_modules ./node_modules
 
 USER spendline
 
