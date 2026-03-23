@@ -55,6 +55,7 @@ if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
 
 const TEST_EMAIL = `smoke-${Date.now()}@spendline.dev`
 const TEST_PASSWORD = "Spendline-Smoke-123!"
+const RUN_ID = `smoke-${Date.now()}`
 
 let jwt = ""
 let keyId = ""
@@ -167,7 +168,7 @@ function buildEvents() {
     Array.from({ length: count }, (_, index) => ({
       ...base,
       model,
-      request_id: `smoke-${model}-${start + index}`,
+      request_id: `${RUN_ID}-${model}-${start + index}`,
       timestamp: new Date().toISOString(),
     }))
 
@@ -205,7 +206,7 @@ async function ingestDuplicate() {
     tokens_in: 1200,
     tokens_out: 800,
     latency_ms: 620,
-    request_id: "smoke-claude-sonnet-4-6-1",
+    request_id: `${RUN_ID}-claude-sonnet-4-6-1`,
     timestamp: new Date().toISOString(),
   }
 
