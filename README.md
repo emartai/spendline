@@ -6,7 +6,7 @@
 
 Track every LLM request, understand every token bill, and catch spend spikes before they hit production budgets.
 
-[Dashboard](https://spend-line.vercel.app) | [API](https://spendlineapi-production.up.railway.app/health) | [Docs](./doc/README.md)
+[Dashboard](https://spend-line.vercel.app) | [API](https://spendline-production.up.railway.app/health) | [Docs](./doc/README.md)
 
 ![license](https://img.shields.io/badge/license-MIT-2ECC8A)
 ![monorepo](https://img.shields.io/badge/monorepo-pnpm-0d1117)
@@ -73,7 +73,7 @@ const response = await track(
 Point either SDK at production with:
 
 ```bash
-SPENDLINE_API_URL=https://spendlineapi-production.up.railway.app
+SPENDLINE_API_URL=https://spendline-production.up.railway.app
 ```
 
 ## Monorepo

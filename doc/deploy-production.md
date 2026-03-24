@@ -56,6 +56,11 @@ Required environment variables:
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - `NEXT_PUBLIC_API_URL=https://your-railway-domain`
 
+Important:
+
+- `NEXT_PUBLIC_API_URL` must include `https://`
+- example: `NEXT_PUBLIC_API_URL=https://spendline-production.up.railway.app`
+
 Required checks after deploy:
 
 1. landing page loads
@@ -103,3 +108,8 @@ $env:SUPABASE_URL="https://your-project.supabase.co"
 $env:SUPABASE_ANON_KEY="your-anon-key"
 apps\api\node_modules\.bin\tsx.CMD scripts\smoke-test.ts
 ```
+
+## Current Production URLs
+
+- Web: `https://spend-line.vercel.app`
+- API: `https://spendline-production.up.railway.app`

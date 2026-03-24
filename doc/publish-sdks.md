@@ -147,7 +147,7 @@ After both packages are published:
 
 1. Install `spendline` from PyPI in a clean venv
 2. Install `spendline` from npm in a clean Node app
-3. Point both at `https://spendlineapi-production.up.railway.app`
+3. Point both at `https://spendline-production.up.railway.app`
 4. Send one real tracked request from each SDK
 5. Confirm both appear in the Spendline dashboard
 
