@@ -20,6 +20,10 @@ type RequestRow = {
   cost_usd: number | string
 }
 
+function getDashboardBaseUrl() {
+  return (process.env.CORS_ORIGIN ?? 'http://localhost:3000').replace(/\/+$/, '')
+}
+
 async function requireUserId(request: FastifyRequest): Promise<string | null> {
   const authHeader = request.headers.authorization
   const token = authHeader?.replace('Bearer ', '').trim()
@@ -337,7 +341,7 @@ export const alertRoutes: FastifyPluginAsync = async (app) => {
           totalSpendUsd: rows.reduce((total, row) => total + toNumber(row.cost_usd), 0),
           requestCount: rows.length,
           modelBreakdown: buildModelBreakdown(rows),
-          dashboardUrl: process.env.CORS_ORIGIN ?? 'http://localhost:3000/dashboard',
+          dashboardUrl: `${getDashboardBaseUrl()}/dashboard`,
           date: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
         })
 

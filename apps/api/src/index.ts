@@ -17,7 +17,7 @@ const app = Fastify({
 })
 
 const port = Number(process.env.PORT ?? 3001)
-const corsOrigin = process.env.CORS_ORIGIN ?? 'http://localhost:3000'
+const corsOrigin = (process.env.CORS_ORIGIN ?? 'http://localhost:3000').replace(/\/+$/, '')
 
 async function buildServer() {
   await app.register(cors, {

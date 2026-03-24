@@ -19,6 +19,10 @@ type RequestRow = {
 
 let scheduledTasks: ScheduledTask[] = []
 
+function getDashboardBaseUrl() {
+  return (process.env.CORS_ORIGIN ?? 'http://localhost:3000').replace(/\/+$/, '')
+}
+
 function logJobError(message: string, userId: string, error: unknown) {
   const details = error instanceof Error ? error.message : 'unknown error'
   process.stderr.write(`${message} for user ${userId}: ${details}\n`)
@@ -110,7 +114,7 @@ async function runSpendThresholdJob() {
         currentSpendUsd: currentSpend,
         thresholdUsd: threshold,
         topModel,
-        dashboardUrl: process.env.CORS_ORIGIN ?? 'http://localhost:3000/dashboard',
+        dashboardUrl: `${getDashboardBaseUrl()}/dashboard`,
       })
 
       await recordAlertHistory({
@@ -161,7 +165,7 @@ async function runDailyDigestJob() {
         totalSpendUsd: rows.reduce((total, row) => total + toNumber(row.cost_usd), 0),
         requestCount: rows.length,
         modelBreakdown: groupModelBreakdown(rows),
-        dashboardUrl: process.env.CORS_ORIGIN ?? 'http://localhost:3000/dashboard',
+        dashboardUrl: `${getDashboardBaseUrl()}/dashboard`,
         date: yesterday.toISOString().slice(0, 10),
       })
 
