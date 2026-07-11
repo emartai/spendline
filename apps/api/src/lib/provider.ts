@@ -23,6 +23,18 @@ export function detectProvider(modelId: string): string {
     return 'deepseek'
   }
 
+  if (modelId.startsWith('mistral-')) {
+    return 'mistral'
+  }
+
+  if (modelId.startsWith('grok-')) {
+    return 'xai'
+  }
+
+  if (modelId.startsWith('llama-3') || modelId.startsWith('mixtral-')) {
+    return 'groq'
+  }
+
   if (modelId.startsWith('anthropic.')) {
     return 'bedrock'
   }
@@ -33,4 +45,3 @@ export function detectProvider(modelId: string): string {
 
   return 'unknown'
 }
-
